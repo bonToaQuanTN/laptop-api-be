@@ -1,10 +1,38 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './controller/app.controller';
+import { AppController } from './controller/controller.user';
+import {RoleController} from './controller/controller.role';
 import {ConfigModule, ConfigService } from '@nestjs/config';
 import {SequelizeModule } from "@nestjs/sequelize";
 import { AppService } from './service/app.service';
 import {CacheModule } from '@nestjs/cache-manager';
 import {redisStore } from 'cache-manager-redis-store';
+import { JwtModule } from '@nestjs/jwt';
+import {Users} from './model/model.user';
+import {Category} from './model/model.category';
+import {Product} from './model/model.product';
+import {ProductImage} from './model/model.productImage';
+import {Order} from './model/model.order';
+import {OrderItem} from './model/model.orderItem';
+import {Permission} from './model/model.permission';
+import {Role} from './model/model.role';
+import {Discount} from './model/model.discount';
+import {Warehouse} from './model/model.warehouse';
+import {Inventory} from './model/model.inventory';
+import {Cart} from './model/model.cart';
+import {CartItem} from './model/model.cartItem';
+import {SeedRoleService} from './seed/seed.role';
+import {SeedService} from './seed/seed.admin';
+import{CategoryController} from './controller/controller.categories';
+import { ProductController } from './controller/controller.product';
+import { OrderController } from './controller/controller.order'; 
+import { OrderItemController } from './controller/controller.orderItem';
+import { PermissionController } from './controller/controller.permession';
+import { DiscountController } from './controller/controller.discount';
+import { ProductImageController } from './controller/controller.productImage';
+import { CartController } from './controller/controller.cart';
+import { CartItemController } from './controller/controller.cartItem';
+import { WarehouseController } from './controller/controller.warehouses';
+import { InventoryController } from './controller/controller.inventory';
 
 @Module({
   imports: [
@@ -27,15 +55,19 @@ import {redisStore } from 'cache-manager-redis-store';
       })
     }),
     SequelizeModule.forFeature([
-      // user,
-      // categories,
-      // products,
-      // productImages,
-      // orders,
-      // orderItems,
-      // role,
-      // permission,
-      // Discounts
+      Users,
+      Category,
+      Product,
+      ProductImage,
+      Order,
+      OrderItem,
+      Role,
+      Permission,
+      Discount,
+      CartItem,
+      Cart,
+      Inventory,
+      Warehouse
     ]),
     CacheModule.registerAsync({
       inject: [ConfigService],
@@ -44,9 +76,30 @@ import {redisStore } from 'cache-manager-redis-store';
         host: config.get('REDIS_HOST'),
         port: config.get('REDIS_PORT')
       })
+    }),
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        secret: configService.get('JWT_SECRET') || 'your-secret-key',
+        signOptions: { expiresIn: configService.get('JWT_EXPIRES_IN') || '1d' }
+      })
     })
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [AppController,
+    RoleController,
+    CategoryController,
+    ProductController, 
+    OrderController, 
+    OrderItemController, 
+    DiscountController,
+    PermissionController,
+    ProductImageController,
+    CartController,
+    CartItemController,
+    WarehouseController,
+    InventoryController
+  ],
+  providers: [AppService, SeedRoleService, SeedService],
 })
 export class AppModule {}

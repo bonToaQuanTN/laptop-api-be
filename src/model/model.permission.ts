@@ -12,6 +12,11 @@ export class Permission extends Model {
 
     @Column({ type: DataType.STRING, allowNull: false })
     declare name: string;
+
+    @ForeignKey(() => Role)
+    @Column({ type: DataType.STRING })
+    declare roleId: string;
     
-    @BelongsTo(() => Role) declare role: Role;
+    @BelongsTo(() => Role)
+    declare role: Role;
 }

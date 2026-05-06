@@ -17,7 +17,7 @@ export class SeedRoleService implements OnModuleInit{
             console.log('Role admin already exists');
             return;
         }
-        await this.roleModel.create({id: 0,name: 'admin'});
+        await this.roleModel.create({id: 'admin', name: 'admin'});
         console.log('Role admin created successfully');
     }
 }

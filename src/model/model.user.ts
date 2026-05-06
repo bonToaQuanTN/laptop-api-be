@@ -31,8 +31,8 @@ export class Users extends Model {
     declare designation: string;
 
     @ForeignKey(() => Role)
-    @Column({ type: DataType.INTEGER }) 
-    declare roleId: number;
+    @Column({ type: DataType.STRING }) 
+    declare roleId: string;
     
     @BelongsTo(() => Role) 
     declare role: Role;

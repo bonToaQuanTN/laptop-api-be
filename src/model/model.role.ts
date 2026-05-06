@@ -14,10 +14,9 @@ export class Role extends Model {
     @Column({ type: DataType.STRING, allowNull: false })
     declare name: string;
 
-    @ForeignKey(() => Role)
-    @Column({ type: DataType.STRING, allowNull: true })
-    declare roleId: string;
-
     @HasMany(() => Users)
     declare users: Users[];
+    
+    @HasMany(() => Permission)
+    declare permissions: Permission[];
 }
