@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './controller/controller.user';
-import {RoleController} from './controller/controller.role';
+import { AppController } from './controller/user/user.controller';
+import {RoleController} from './controller/role/controller.role';
 import {ConfigModule, ConfigService } from '@nestjs/config';
 import {SequelizeModule } from "@nestjs/sequelize";
 import { AppService } from './service/app.service';
@@ -22,17 +22,17 @@ import {Cart} from './model/model.cart';
 import {CartItem} from './model/model.cartItem';
 import {SeedRoleService} from './seed/seed.role';
 import {SeedService} from './seed/seed.admin';
-import{CategoryController} from './controller/controller.categories';
-import { ProductController } from './controller/controller.product';
-import { OrderController } from './controller/controller.order'; 
-import { OrderItemController } from './controller/controller.orderItem';
-import { PermissionController } from './controller/controller.permession';
-import { DiscountController } from './controller/controller.discount';
-import { ProductImageController } from './controller/controller.productImage';
-import { CartController } from './controller/controller.cart';
-import { CartItemController } from './controller/controller.cartItem';
-import { WarehouseController } from './controller/controller.warehouses';
-import { InventoryController } from './controller/controller.inventory';
+import{CategoryController} from './controller/product/categories.controller';
+import { ProductController } from './controller/product/product.controller';
+import { OrderController } from './controller/sale/order.controller';
+import { OrderItemController } from './controller/sale/orderItem.controller';
+import { PermissionController } from './controller/role/permession.controller';
+import { DiscountController } from './controller/sale/discount.controller';
+import { ProductImageController } from './controller/product/productImage.controller';
+import { CartController } from './controller/sale/cart.controller';
+import { CartItemController } from './controller/sale/cartItem.controller';
+import { WarehouseController } from './controller/inventory/warehouses.controller';
+import { InventoryController } from './controller/inventory/inventory.controller';
 
 @Module({
   imports: [

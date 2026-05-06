@@ -1,7 +1,7 @@
 import {Controller, Get, Post, Body, Delete, Patch, Param, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
-import { AppService } from '../service/app.service';
+import { AppService } from '../../service/app.service';
 import { ApiTags, ApiBearerAuth, ApiParam } from '@nestjs/swagger';
-import { CreateRoleDto } from "../dto/dto.role"; // Import chuẩn tên
+import { CreateRoleDto } from "../../dto/role/role.dto"; // Import chuẩn tên
 // import { AuthGuard } from '../guards/auth.guard';
 // import { PermissionGuard } from '../guards/PermissionGuard';
 // import { Permissions } from '../guards/roles.decorator';

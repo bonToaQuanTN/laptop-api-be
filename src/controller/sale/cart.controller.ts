@@ -1,8 +1,8 @@
 import { 
   Controller, Get, Body, Post, Delete, Param, UseGuards, Req, HttpCode, HttpStatus,ParseIntPipe, Query
 } from '@nestjs/common';
-import { AppService } from '../service/app.service';
-import { CreateCartDto } from '../dto/dto.cart';
+import { AppService } from '../../service/app.service';
+import { CreateCartDto } from '../../dto/sale/cart.dto';
 // import { AuthGuard } from '../guards/auth.guard';
 // import { PermissionGuard } from '../guards/PermissionGuard';
 // import { Permissions } from '../guards/roles.decorator';

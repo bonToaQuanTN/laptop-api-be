@@ -1,6 +1,6 @@
 import {Controller, Get, Post, Put, Body, Delete, Param, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
-import { AppService } from '../service/app.service';
-import { CreateCategoryDto } from "../dto/dto.category";
+import { AppService } from '../../service/app.service';
+import { CreateCategoryDto } from "../../dto/product/category.dto";
 //import { Permissions } from '../guards/roles.decorator';
 //import { PermissionGuard } from '../guards/PermissionGuard';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiBody } from '@nestjs/swagger';

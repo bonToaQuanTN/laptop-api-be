@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Put, Body, Req, Delete, Param, UseGuards, Query, UseInterceptors, HttpCode, HttpStatus, ParseIntPipe  } from '@nestjs/common';
-import { AppService } from '../service/app.service';
+import { AppService } from '../../service/app.service';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiBearerAuth, ApiParam, ApiQuery  } from '@nestjs/swagger';
-import { CreateUserDto, UpdateUserDto, LoginDto } from '../dto/dto.user';
+import { CreateUserDto, UpdateUserDto, LoginDto } from '../../dto/user/user.dto';
 //import { Permissions } from '../guards/roles.decorator';
 import { } from '@nestjs/common';
 // import { AuthGuard } from '../guards/auth.guard';

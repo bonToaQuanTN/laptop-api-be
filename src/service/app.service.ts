@@ -20,18 +20,18 @@ import { Logger } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import * as bcrypt from 'bcrypt';
 import { ConflictException } from '@nestjs/common';
-import {CreateUserDto, UpdateUserDto,LoginDto} from '../dto/dto.user';
+import {CreateUserDto, UpdateUserDto,LoginDto} from '../dto/user/user.dto';
 import { Op } from 'sequelize';
-import { CreateRoleDto } from 'src/dto/dto.role';
-import { CreateProductDto, UpdateProductDto } from 'src/dto/dto.product';
-import {  CreateOrderDto, UpdateOrderDto} from 'src/dto/dto.order';
-import {CreateOrderItemDto} from 'src/dto/dto.orderItem';
-import {PermissionDto} from 'src/dto/dto.permission';
-import {DiscountDto} from 'src/dto/dto.discount';
-import {CreateProductImageDto, UpdateProductImageDto} from 'src/dto/dto.productImages';
-import{CreateCartItemDto, UpdateCartItemDto} from 'src/dto/dto.cartItem';
-import{CreateWarehouseDto,UpdateWarehouseDto} from 'src/dto/dto.warehouses';
-import{CreateInventoryDto,UpdateInventoryDto} from 'src/dto/dto.inventory';
+import { CreateRoleDto } from 'src/dto/role/role.dto';
+import { CreateProductDto, UpdateProductDto } from 'src/dto/product/product.dto';
+import {  CreateOrderDto, UpdateOrderDto} from 'src/dto/sale/order.dto';
+import {CreateOrderItemDto} from 'src/dto/sale/orderItem.dto';
+import {PermissionDto} from 'src/dto/role/permission.dto';
+import {DiscountDto} from 'src/dto/sale/discount.dto';
+import {CreateProductImageDto, UpdateProductImageDto} from 'src/dto/product/productImages.dto';
+import{CreateCartItemDto, UpdateCartItemDto} from 'src/dto/sale/cartItem.dto';
+import{CreateWarehouseDto,UpdateWarehouseDto} from 'src/dto/inventory/warehouses.dto';
+import{CreateInventoryDto,UpdateInventoryDto} from 'src/dto/inventory/inventory.dto';
 
 @Injectable()
 export class AppService {

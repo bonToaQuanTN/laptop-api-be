@@ -2,8 +2,8 @@ import {
   Controller, Get, Post, Put, Body, Delete, Param, UseGuards, Query, 
   HttpCode, HttpStatus, ParseIntPipe 
 } from '@nestjs/common';
-import { AppService } from '../service/app.service';
-import { DiscountDto } from '../dto/dto.discount'; // Thêm UpdateDiscountDto
+import { AppService } from '../../service/app.service';
+import { DiscountDto } from '../../dto/sale/discount.dto'; // Thêm UpdateDiscountDto
 // import { AuthGuard } from '../guards/auth.guard';
 // import { PermissionGuard } from '../guards/PermissionGuard';
 import { ApiTags, ApiOperation, ApiParam, ApiQuery, ApiBody, ApiBearerAuth } from '@nestjs/swagger';

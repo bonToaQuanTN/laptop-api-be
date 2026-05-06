@@ -2,9 +2,9 @@ import {
   Controller, Get, Post, Patch, Body, Delete, Param, UseGuards, 
   HttpCode, HttpStatus 
 } from '@nestjs/common';
-import { AppService } from '../service/app.service';
+import { AppService } from '../../service/app.service';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiParam, ApiBody } from '@nestjs/swagger';
-import { PermissionDto } from "../dto/dto.permission";
+import { PermissionDto } from "../../dto/role/permission.dto";
 // import { AuthGuard } from '../guards/auth.guard';
 // import { PermissionGuard } from '../guards/PermissionGuard'; 
 // import { Permissions } from '../guards/roles.decorator';  

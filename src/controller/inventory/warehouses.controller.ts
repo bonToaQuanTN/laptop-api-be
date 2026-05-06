@@ -2,8 +2,8 @@ import {
   Controller, Get, Post, Put, Body, Delete, Param, UseGuards, Query, 
   HttpCode, HttpStatus, ParseIntPipe 
 } from '@nestjs/common';
-import { AppService } from '../service/app.service';
-import { CreateWarehouseDto, UpdateWarehouseDto } from '../dto/dto.warehouses';
+import { AppService } from '../../service/app.service';
+import { CreateWarehouseDto, UpdateWarehouseDto } from '../../dto/inventory/warehouses.dto';
 // import { AuthGuard } from '../guards/auth.guard';
 // import { PermissionGuard } from '../guards/PermissionGuard';
 // import { Permissions } from '../guards/roles.decorator';
