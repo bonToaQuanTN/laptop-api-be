@@ -1,12 +1,25 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './controller/user/user.controller';
-import {RoleController} from './controller/role/controller.role';
+import { userController } from './controller/user/user.controller';
+import {RoleController} from './controller/role/role.controller';
 import {ConfigModule, ConfigService } from '@nestjs/config';
 import {SequelizeModule } from "@nestjs/sequelize";
+import { userService } from './service/user/user.service';
+import { roleService } from './service/role/role.service';
+import { CategoryService } from './service/product/category.service';
+import { productService } from './service/product/product.service';
+import { productImageService } from './service/product/productImage.service';
+import { PermissionService } from './service/role/permission.service';
+import { DiscountService } from './service/sale/discount.service';
+import { CartService } from './service/sale/cart.service';
+import { CartItemService } from './service/sale/cartItem.service';
+import { OrderService } from './service/sale/order.service';
+import { OrderItemService } from './service/sale/orderItem.service';
+import { InventoryService } from './service/inventory/inventory.service';
+import { warehousesService } from './service/inventory/warehouses.service';
 import { AppService } from './service/app.service';
 import {CacheModule } from '@nestjs/cache-manager';
 import {redisStore } from 'cache-manager-redis-store';
-import { JwtModule } from '@nestjs/jwt';
+import {JwtModule } from '@nestjs/jwt';
 import {Users} from './model/model.user';
 import {Category} from './model/model.category';
 import {Product} from './model/model.product';
@@ -21,6 +34,7 @@ import {Inventory} from './model/model.inventory';
 import {Cart} from './model/model.cart';
 import {CartItem} from './model/model.cartItem';
 import {SeedRoleService} from './seed/seed.role';
+import { loginController } from './controller/user/login.controller';
 import {SeedService} from './seed/seed.admin';
 import{CategoryController} from './controller/product/categories.controller';
 import { ProductController } from './controller/product/product.controller';
@@ -33,6 +47,7 @@ import { CartController } from './controller/sale/cart.controller';
 import { CartItemController } from './controller/sale/cartItem.controller';
 import { WarehouseController } from './controller/inventory/warehouses.controller';
 import { InventoryController } from './controller/inventory/inventory.controller';
+import { loginService } from './service/user/login.service';
 
 @Module({
   imports: [
@@ -86,7 +101,9 @@ import { InventoryController } from './controller/inventory/inventory.controller
       })
     })
   ],
-  controllers: [AppController,
+  controllers: [  
+    loginController,
+    userController,
     RoleController,
     CategoryController,
     ProductController, 
@@ -100,6 +117,25 @@ import { InventoryController } from './controller/inventory/inventory.controller
     WarehouseController,
     InventoryController
   ],
-  providers: [AppService, SeedRoleService, SeedService],
+  providers: [
+    AppService,
+    loginService,
+    userService,
+    SeedRoleService,
+    SeedService,
+    InventoryService,
+    warehousesService,
+    CartItemService,
+    CartService,
+    OrderService,
+    productImageService,
+    DiscountService,
+    PermissionService,
+    productService,
+    CategoryService,
+    userService,
+    roleService,
+    OrderItemService
+  ],
 })
 export class AppModule {}

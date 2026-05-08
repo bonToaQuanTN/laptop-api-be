@@ -1,20 +1,20 @@
 import { Controller, Get, Post, Put, Body, Delete, Param, UseGuards, Query, HttpCode, HttpStatus, ParseIntPipe } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiParam, ApiBody, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { CreateProductDto, UpdateProductDto } from '../../dto/product/product.dto'; 
-import { AppService } from '../../service/app.service';
-// import { AuthGuard } from '../guards/auth.guard';
-// import { PermissionGuard } from '../guards/PermissionGuard';
-// import { Permissions } from '../guards/roles.decorator';
+import { productService } from '../../service/product/product.service';
+import { AuthGuard } from '../../guard/auth.guard';
+import { PermissionGuard } from '../../guard/permission.guard';
+import { Permissions } from '../../guard/decorator/roles.decorator';
 
 @ApiTags('Products')
-// @ApiBearerAuth()
-// @UseGuards(AuthGuard, PermissionGuard)
+@ApiBearerAuth()
+@UseGuards(AuthGuard, PermissionGuard)
 @Controller('products')
 export class ProductController {
-    constructor(private readonly productService: AppService) {}
+    constructor(private readonly productService: productService) {}
 
     @Post()
-    //@Permissions('POST.PRODUCT')
+    @Permissions('POST.PRODUCT')
     @HttpCode(HttpStatus.CREATED)
     @ApiBody({ type: CreateProductDto })
     create(@Body() body: CreateProductDto) {
@@ -22,7 +22,7 @@ export class ProductController {
     }
 
     @Get()
-    //@Permissions('GET.PRODUCT') 
+    @Permissions('GET.PRODUCT') 
     @ApiOperation({ summary: 'Get all products' })
     @ApiQuery({ name: 'page', required: false, type: Number })
     getProducts(
@@ -32,7 +32,7 @@ export class ProductController {
     }
 
     @Get('search')
-    //@Permissions('SEARCH.PRODUCT')
+    @Permissions('SEARCH.PRODUCT')
     @ApiOperation({ summary: 'Search products by name' })
     @ApiQuery({ name: 'name', required: true, type: String })
     @ApiQuery({ name: 'page', required: false, type: Number })
@@ -43,9 +43,8 @@ export class ProductController {
         return this.productService.searchProducts(name, page);
     }
 
-    // SỬA: Đổi ':code' thành ':id' cho khớp với DB
     @Put(':id')
-    //@Permissions('PUT.PRODUCT')
+    @Permissions('PUT.PRODUCT')
     @ApiOperation({ summary: 'Update product' })
     @ApiParam({ name: 'id', type: String, description: 'Product ID (UUID)' })
     @ApiBody({ type: UpdateProductDto }) // Dùng UpdateProductDto
@@ -56,11 +55,10 @@ export class ProductController {
         return this.productService.updateProduct(id, body);
     }
 
-    // SỬA: Đổi ':code' thành ':id' cho khớp với DB
     @Delete(':id')
-    //@Permissions('DELETE.PRODUCT')
+    @Permissions('DELETE.PRODUCT')
     @ApiOperation({ summary: 'Delete product' })
-    @HttpCode(HttpStatus.NO_CONTENT) // Trả về 204 khi xóa thành công
+    @HttpCode(HttpStatus.NO_CONTENT)
     @ApiParam({ name: 'id', type: String, description: 'Product ID (UUID)' })
     deleteProduct(@Param('id') id: string) {
         return this.productService.deleteProduct(id);

@@ -28,4 +28,11 @@ export class OrderItem extends Model {
 
     @Column({ type: DataType.INTEGER, allowNull: false })
     declare quantity: number;
+
+    @Column({ 
+        type: DataType.DECIMAL(10, 2),
+        allowNull: false, 
+        defaultValue: 0 
+    })
+    declare price: number;
 }

@@ -1,20 +1,22 @@
 import {Controller, Get, Post, Put, Body, Delete, Param, UseGuards, Query, HttpCode, HttpStatus, ParseIntPipe, Req } from '@nestjs/common';
-import { AppService } from '../../service/app.service';
-// import { Permissions } from '../guards/roles.decorator';
+import { OrderService } from '../../service/sale/order.service';
+
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiBody, ApiParam, ApiQuery } from '@nestjs/swagger';
-// import { PermissionGuard } from '../guards/PermissionGuard';
 import { CreateOrderDto, UpdateOrderDto } from "../../dto/sale/order.dto";
-// import { AuthGuard } from '../guards/auth.guard';
+
+import { AuthGuard } from '../../guard/auth.guard';
+import { PermissionGuard } from '../../guard/permission.guard';
+import { Permissions } from '../../guard/decorator/roles.decorator';
 
 @ApiTags('orders')
-// @UseGuards(AuthGuard, PermissionGuard)
+@UseGuards(AuthGuard, PermissionGuard)
 @ApiBearerAuth()
 @Controller('orders')
 export class OrderController {
-    constructor(private readonly orderService: AppService) {}
+    constructor(private readonly orderService: OrderService) {}
 
     @Post()
-    // @Permissions('POST.ORDER')
+    @Permissions('POST.ORDER')
     @ApiOperation({ summary: 'Create order' })
     @HttpCode(HttpStatus.CREATED)
     @ApiBody({ type: CreateOrderDto })
@@ -24,7 +26,7 @@ export class OrderController {
     }
 
     @Get()
-    // @Permissions('GET.ORDER')
+    @Permissions('GET.ORDER')
     @ApiOperation({ summary: 'Get all orders' })
     @ApiQuery({ name: 'page', required: false, type: Number })
     getOrders(@Query('page', new ParseIntPipe({ optional: true })) page: number) {
@@ -32,7 +34,7 @@ export class OrderController {
     }
 
     @Get(':id')
-    // @Permissions('GETID.ORDER')
+    @Permissions('GETID.ORDER')
     @ApiOperation({ summary: 'Get order by id' })
     @ApiParam({ name: 'id', type: String, description: 'Order ID (UUID)' })
     getOrderById(@Param('id') id: string) {
@@ -40,7 +42,7 @@ export class OrderController {
     }
 
     @Put(':id')
-    // @Permissions('PUTID.ORDER')
+    @Permissions('PUTID.ORDER')
     @ApiOperation({ summary: 'Update order (status, address...)' })
     @ApiParam({ name: 'id', type: String, description: 'Order ID (UUID)' })
     @ApiBody({ type: UpdateOrderDto })
@@ -52,7 +54,7 @@ export class OrderController {
     }
 
     @Delete(':id')
-    // @Permissions('DELETE.ORDER')
+    @Permissions('DELETE.ORDER')
     @ApiOperation({ summary: 'Delete order (soft delete)' })
     @HttpCode(HttpStatus.NO_CONTENT)    
     @ApiParam({ name: 'id', type: String, description: 'Order ID (UUID)' })

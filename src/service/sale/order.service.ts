@@ -1,0 +1,209 @@
+import { Injectable, Inject, Logger, NotFoundException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/sequelize';
+import type { Cache } from 'cache-manager';
+import { Order } from 'src/model/model.order';
+import { OrderItem } from 'src/model/model.orderItem';
+import { Product } from 'src/model/model.product';
+import { Discount } from 'src/model/model.discount';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { CreateOrderDto, UpdateOrderDto } from 'src/dto/sale/order.dto';
+import { Users } from 'src/model/model.user';
+
+@Injectable()
+export class OrderService {
+    private readonly logger = new Logger(OrderService.name);
+
+    constructor(
+        @InjectModel(Order) private orderModel: typeof Order,
+        @InjectModel(OrderItem) private orderItemModel: typeof OrderItem,
+        @InjectModel(Product) private productModel: typeof Product,
+        @InjectModel(Discount) private discountModel: typeof Discount,
+        @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    ) {}
+    private handleError(error: unknown, context: string) {
+        if (error instanceof Error) {
+            this.logger.error(`${context}: ${error.message}`, error.stack);
+        } else {
+            this.logger.error(`${context}: Unknown error`, JSON.stringify(error));
+        }
+    }  
+  async createOrder(userId: string, dto: CreateOrderDto) {
+    this.logger.log(`Create order attempt for user: ${userId}`);
+    try {
+      const order = await this.orderModel.create({ 
+        userId, 
+        discountId: dto.discountId || null,
+        status:'pending',
+        shippingAddress: dto.shippingAddress
+      });
+      
+      this.logger.log(`Order created successfully: ${order.id}`);
+      await this.cacheManager.clear();
+      return order;
+    } catch (error) {
+      this.handleError(error, 'Create order error');
+      throw error;
+    }
+  }
+
+  
+  async getOrders(page: number = 1) {
+    this.logger.log(`Get orders page: ${page}`);
+    try {
+      const limit = 5;
+      const offset = (page - 1) * limit;
+      
+      const { rows, count } = await this.orderModel.findAndCountAll({
+        include: [
+          { model: OrderItem },
+          { 
+            model: Users, attributes: ['id', 'firstName', 'lastName', 'email'] 
+          },
+          {
+            model: Discount,
+            attributes: ['id', 'discountRate'],
+            required: false
+          }
+        ],
+        limit,
+        offset,
+        order: [['createdAt', 'DESC']]
+      });
+
+      const orders = rows.map(order => {
+        const plainOrder = order.toJSON();
+        const subtotal = plainOrder.orderItems.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+        const discountRate = Number(plainOrder.discount?.discountRate || 0);
+        const finalAmount = subtotal - (subtotal * discountRate) / 100;
+        
+        return {
+          ...plainOrder,
+          subtotal,
+          discountRate,
+          finalAmount
+        };
+      });
+
+      this.logger.log(`Orders fetched successfully: ${orders.length}`);
+      return {
+        page,
+        limit,
+        totalOrders: count,
+        totalPages: Math.ceil(count / limit),
+        data: orders
+      };
+    } catch (error) {
+      this.handleError(error, 'Get orders error');
+      throw error;
+    }
+  }
+
+  async updateOrder(id: string, dto: UpdateOrderDto) {
+    this.logger.log(`Update order attempt: ${id}`);
+    try {
+      const order = await this.orderModel.findByPk(id);
+      if (!order) {
+        this.logger.warn(`Update failed - order not found: ${id}`);
+        throw new NotFoundException('Order not found');
+      }
+      const safeData: any = {};
+      if (dto.status) safeData.status = dto.status;
+      if (dto.shippingAddress) safeData.shippingAddress = dto.shippingAddress;
+      if (dto.discountId !== undefined) safeData.discountId = dto.discountId;
+
+      await order.update(safeData);
+      
+      this.logger.log(`Order updated successfully: ${id}`);
+      await this.cacheManager.clear();
+      return order;
+    } catch (error) {
+      this.handleError(error, 'Update order error');
+      throw error;
+    }
+  }
+
+  async deleteOrder(id: string) {
+    this.logger.log(`Delete order attempt: ${id}`);
+    try {
+      const order = await this.orderModel.findByPk(id);
+      if (!order) {
+        this.logger.warn(`Delete failed - order not found: ${id}`);
+        throw new NotFoundException('Order not found');
+      }
+      
+      await order.destroy();
+      await this.cacheManager.clear(); 
+      
+      this.logger.log(`Order soft deleted successfully: ${id}`);
+      return { message: 'Order deleted successfully' };
+    } catch (error) {
+      this.handleError(error, 'Delete order error');
+      throw error;
+    }
+  }
+
+  async getOrderById(id: string) {
+    const cacheKey = `order_${id}`;
+    this.logger.log(`Get order by id: ${id}`);
+    
+    try {
+      const cached = await this.cacheManager.get(cacheKey);
+      if (cached) {
+        this.logger.log(`CACHE HIT: ${cacheKey}`);
+        return cached;
+      }
+
+      this.logger.warn(`CACHE MISS: ${cacheKey}`);
+
+      const order = await this.orderModel.findByPk(id, {
+        include: [
+          {
+            model: OrderItem,
+            attributes: ['id', 'productId', 'quantity'], 
+            include: [{model: Product, attributes: ['id', 'name', 'price']}]
+          },
+          {
+            model: Discount,
+            attributes: ['id', 'discountRate'],
+            required: false
+          },
+          {
+            model: Users,
+            attributes: ['id', 'firstName', 'lastName', 'email']
+          }
+        ]
+      });
+
+      if (!order) {
+        this.logger.warn(`Order not found: ${id}`);
+        throw new NotFoundException('Order not found');
+      }
+      const plainOrder = order.toJSON();
+      const subtotal = (plainOrder.orderItems || []).reduce((sum, item) => {
+        const itemPrice = item.product?.price || 0;
+        return sum + (item.quantity * itemPrice);
+      }, 0);
+
+      const discountRate = Number(plainOrder.discount?.discountRate || 0);
+      const finalAmount = subtotal - (subtotal * discountRate) / 100;
+
+      const result = {...plainOrder,subtotal,discountRate,finalAmount};
+      await this.cacheManager.set(cacheKey, result, 60000);
+      this.logger.log(`CACHE SET: ${cacheKey}`);
+      this.logger.log(`Order fetched successfully: ${id}`);
+      return result;
+
+    } catch (error) {
+      this.handleError(error, 'Get order by id error');
+      throw error;
+    }
+  }
+
+  async updateStatus(orderId: string, status: string) {
+    const order = await this.orderModel.findByPk(orderId);
+    if (!order) throw new NotFoundException('Order not found');
+    await order.update({ status });
+    await this.cacheManager.clear();
+    return order;
+  }
+}

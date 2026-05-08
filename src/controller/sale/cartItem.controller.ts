@@ -1,22 +1,22 @@
 import { 
   Controller, Get, Post, Put, Body, Delete, Param, UseGuards, HttpCode, HttpStatus 
 } from '@nestjs/common';
-import { AppService } from '../../service/app.service';
+import { CartItemService } from '../../service/sale/cartItem.service';
 import { CreateCartItemDto, UpdateCartItemDto } from '../../dto/sale/cartItem.dto';
-// import { AuthGuard } from '../guards/auth.guard';
-// import { PermissionGuard } from '../guards/PermissionGuard';
-// import { Permissions } from '../guards/roles.decorator';
+import { AuthGuard } from '../../guard/auth.guard';
+import { PermissionGuard } from '../../guard/permission.guard';
+import { Permissions } from '../../guard/decorator/roles.decorator';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiParam, ApiBody } from '@nestjs/swagger';
 
 @ApiTags('cart-items')
-// @UseGuards(AuthGuard, PermissionGuard)
+@UseGuards(AuthGuard, PermissionGuard)
 @ApiBearerAuth()
 @Controller('cart-items')
 export class CartItemController {
-  constructor(private readonly cartItemService: AppService) {}
+  constructor(private readonly cartItemService: CartItemService) {}
 
   @Get('cart/:cartId')
-//   @Permissions('GET.CART_ITEM')
+  @Permissions('GET.CART_ITEM')
   @ApiOperation({ summary: 'Get all items in a specific cart' })
   @ApiParam({ name: 'cartId', type: String, description: 'Cart ID (UUID)' })
   getItemsByCart(@Param('cartId') cartId: string) {
@@ -24,7 +24,7 @@ export class CartItemController {
   }
 
   @Post()
-//@Permissions('POST.CART_ITEM')
+  @Permissions('POST.CART_ITEM')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Add product to cart (Price fetched from DB automatically)' })
   @ApiBody({ type: CreateCartItemDto })
@@ -33,7 +33,7 @@ export class CartItemController {
   }
 
   @Put(':id')
-//   @Permissions('PUT.CART_ITEM')
+  @Permissions('PUT.CART_ITEM')
   @ApiOperation({ summary: 'Update cart item quantity' })
   @ApiParam({ name: 'id', type: String, description: 'Cart Item ID (UUID)' })
   @ApiBody({ type: UpdateCartItemDto })
@@ -45,7 +45,7 @@ export class CartItemController {
   }
 
   @Delete(':id')
-//   @Permissions('DELETE.CART_ITEM')
+  @Permissions('DELETE.CART_ITEM')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Remove item from cart (Soft delete)' })
   @ApiParam({ name: 'id', type: String, description: 'Cart Item ID (UUID)' })

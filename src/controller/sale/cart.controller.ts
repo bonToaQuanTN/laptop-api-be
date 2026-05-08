@@ -1,22 +1,22 @@
 import { 
   Controller, Get, Body, Post, Delete, Param, UseGuards, Req, HttpCode, HttpStatus,ParseIntPipe, Query
 } from '@nestjs/common';
-import { AppService } from '../../service/app.service';
+import { CartService } from '../../service/sale/cart.service';
 import { CreateCartDto } from '../../dto/sale/cart.dto';
-// import { AuthGuard } from '../guards/auth.guard';
-// import { PermissionGuard } from '../guards/PermissionGuard';
-// import { Permissions } from '../guards/roles.decorator';
+import { AuthGuard } from '../../guard/auth.guard';
+import { PermissionGuard } from '../../guard/permission.guard';
+import { Permissions } from '../../guard/decorator/roles.decorator';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiParam,ApiQuery } from '@nestjs/swagger';
 
 @ApiTags('carts')
-// @UseGuards(AuthGuard, PermissionGuard)
+@UseGuards(AuthGuard, PermissionGuard)
 @ApiBearerAuth()
 @Controller('carts')
 export class CartController {
-  constructor(private readonly cartService: AppService) {}
+  constructor(private readonly cartService: CartService) {}
 
   @Get()
-  //@Permissions('GET.ALL.CARTS')
+  @Permissions('GET.CART')
   @ApiOperation({ summary: 'Get all carts (Admin view)' })
   @ApiQuery({ name: 'page', required: false, type: Number })
   getAllCarts(
@@ -26,7 +26,7 @@ export class CartController {
   }
 
   @Get(':id')
-//   @Permissions('GETID.CART')
+  @Permissions('GETID.CART')
   @ApiOperation({ summary: 'Get cart by Cart ID (Admin)' })
   @ApiParam({ name: 'id', type: String, description: 'Cart ID (UUID)' })
   getCartById(@Param('id') id: string) {
@@ -34,7 +34,7 @@ export class CartController {
   }
 
   @Post()
-  //@Permissions('POST.CART')
+  @Permissions('POST.CART')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create a new cart for current user' })
   createCart(@Body() dto: CreateCartDto, @Req() req: any) {
@@ -44,7 +44,7 @@ export class CartController {
 
 
   @Delete(':id')
-//   @Permissions('DELETE.CART')
+  @Permissions('DELETE.CART')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Soft delete cart' })
   @ApiParam({ name: 'id', type: String, description: 'Cart ID (UUID)' })

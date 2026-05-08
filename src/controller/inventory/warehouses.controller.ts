@@ -2,22 +2,22 @@ import {
   Controller, Get, Post, Put, Body, Delete, Param, UseGuards, Query, 
   HttpCode, HttpStatus, ParseIntPipe 
 } from '@nestjs/common';
-import { AppService } from '../../service/app.service';
+import { warehousesService } from '../../service/inventory/warehouses.service';
 import { CreateWarehouseDto, UpdateWarehouseDto } from '../../dto/inventory/warehouses.dto';
-// import { AuthGuard } from '../guards/auth.guard';
-// import { PermissionGuard } from '../guards/PermissionGuard';
-// import { Permissions } from '../guards/roles.decorator';
+import { AuthGuard } from '../../guard/auth.guard';
+import { PermissionGuard } from '../../guard/permission.guard';
+import { Permissions } from '../../guard/decorator/roles.decorator';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiBody } from '@nestjs/swagger';
 
 @ApiTags('warehouses')
-// @UseGuards(AuthGuard, PermissionGuard)
+@UseGuards(AuthGuard, PermissionGuard)
 @ApiBearerAuth()
 @Controller('warehouses')
 export class WarehouseController {
-  constructor(private readonly warehouseService: AppService) {}
+  constructor(private readonly warehouseService: warehousesService) {}
 
   @Get()
-//   @Permissions('GET.WAREHOUSE')
+  @Permissions('GET.WAREHOUSE')
   @ApiOperation({ summary: 'Get all warehouses with pagination' })
   @ApiQuery({ name: 'page', required: false, type: Number })
   getWarehouses(
@@ -27,7 +27,7 @@ export class WarehouseController {
   }
 
   @Get(':id')
-//   @Permissions('GETID.WAREHOUSE')
+  @Permissions('GETID.WAREHOUSE')
   @ApiOperation({ summary: 'Get warehouse by ID' })
   @ApiParam({ name: 'id', type: String, description: 'Warehouse ID (UUID)' })
   getWarehouseById(@Param('id') id: string) {
@@ -35,7 +35,7 @@ export class WarehouseController {
   }
 
   @Post()
-//   @Permissions('POST.WAREHOUSE')
+  @Permissions('POST.WAREHOUSE')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create new warehouse' })
   @ApiBody({ type: CreateWarehouseDto })
@@ -44,7 +44,7 @@ export class WarehouseController {
   }
 
   @Put(':id')
-//   @Permissions('PUT.WAREHOUSE')
+  @Permissions('PUT.WAREHOUSE')
   @ApiOperation({ summary: 'Update warehouse information' })
   @ApiParam({ name: 'id', type: String, description: 'Warehouse ID (UUID)' })
   @ApiBody({ type: UpdateWarehouseDto })
@@ -56,7 +56,7 @@ export class WarehouseController {
   }
 
   @Delete(':id')
-//   @Permissions('DELETE.WAREHOUSE')
+  @Permissions('DELETE.WAREHOUSE')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Soft delete warehouse' })
   @ApiParam({ name: 'id', type: String, description: 'Warehouse ID (UUID)' })

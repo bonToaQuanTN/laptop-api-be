@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder} from '@nestjs/swagger';
 import { WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
+import * as express from 'express';
 
 async function bootstrap() {
 
@@ -36,6 +37,10 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule,{ logger });
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
+
+  app.use('/payment/webhook', express.raw({ type: 'application/json' }));
+  app.enableCors();
+  app.setGlobalPrefix('api');
   
   await app.listen(process.env.PORT ?? 3000);
 }
