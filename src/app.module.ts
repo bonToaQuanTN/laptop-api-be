@@ -104,6 +104,7 @@ import { StripeService } from './service/payment/pay.service';
     })
   ],
   controllers: [
+    
     PaymentController,
     loginController,
     userController,
@@ -121,6 +122,7 @@ import { StripeService } from './service/payment/pay.service';
     InventoryController
   ],
   providers: [
+
     StripeService,
     AppService,
     loginService,

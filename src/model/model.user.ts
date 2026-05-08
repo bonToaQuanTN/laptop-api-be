@@ -9,7 +9,7 @@ import { Order } from "./model.order";
 })
 export class Users extends Model {
     @PrimaryKey
-    @Column({ type: DataType.STRING, defaultValue: 'user' }) 
+    @Column({ type: DataType.STRING, defaultValue: DataType.UUIDV4 }) 
     declare id: string;
 
     @Column({ type: DataType.STRING, allowNull: false }) 

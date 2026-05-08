@@ -9,6 +9,7 @@ import type { Cache } from 'cache-manager';
 import { CreateUserDto } from 'src/dto/user/user.dto';
 import { UpdateUserDto } from 'src/dto/user/user.dto';
 import { Role } from 'src/model/model.role';
+import { Permission } from 'src/model/model.permission';
 
 @Injectable()
 export class userService {
@@ -28,56 +29,48 @@ export class userService {
         this.logger.error(`${context}: Unknown error`, JSON.stringify(error));
         }
     }
-
-    async generateUserId(){
-        const lastUser = await this.userModel.findOne({order: [['id', 'DESC']] });
-        if (!lastUser) return '221CTT001';
-        const lastNumber = parseInt(lastUser.id.slice(-3));
-        const newNumber = lastNumber + 1;
-        return `221CTT${String(newNumber).padStart(3, '0')}`;
-      }
     
-      async createUser(data: CreateUserDto) {
-        this.logger.log(`Create user attempt: ${data.email}`);
-        try {
-          const existUser = await this.userModel.findOne({ where: { email: data.email } });
-          if (existUser) {
-            this.logger.warn(`Create user failed - email exists: ${data.email}`);
-            throw new ConflictException('Email already exists');
-          }
-    
-          if (!data.roleId) {
-            this.logger.log(`No roleId provided, assigning default 'guest' role`);
-            const guestRole = await this.roleModel.findOne({ where: { name: 'guest' } });
-            
-            if (!guestRole) {
-              this.logger.error('Default "guest" role not found in database');
-              throw new InternalServerErrorException('System error: Default "guest" role is missing. Please contact admin.');
-            }
-            data.roleId = guestRole.id;
-          }
-    
-          const hashedPassword = await bcrypt.hash(data.password, 10);
-          const id = await this.generateUserId();
-          
-          const newUser = await this.userModel.create({...data,password: hashedPassword,id});
-    
-          await this.cacheManager.clear();
-          this.logger.log(`User created successfully: ${data.email} with roleId: ${data.roleId}`);
-          
-          const userResponse = newUser.toJSON();
-          delete userResponse.password;
-          delete userResponse.refreshToken;
-          return userResponse;
-    
-        } catch (error) {
-          this.handleError(error, 'Create user error');
-          throw error;
+    async createUser(data: CreateUserDto) {
+      this.logger.log(`Create user attempt: ${data.email}`);
+      try {
+        const existUser = await this.userModel.findOne({ where: { email: data.email } });
+        if (existUser) {
+          this.logger.warn(`Create user failed - email exists: ${data.email}`);
+          throw new ConflictException('Email already exists');
         }
+
+        if (!data.roleId) {
+          this.logger.log(`No roleId provided, assigning default 'guest' role`);
+          const guestRole = await this.roleModel.findOne({ where: { name: 'guest' } });
+          
+          if (!guestRole) {
+            this.logger.error('Default "guest" role not found in database');
+            throw new InternalServerErrorException('System error: Default "guest" role is missing. Please contact admin.');
+          }
+          data.roleId = guestRole.id;
+        }
+
+        const hashedPassword = await bcrypt.hash(data.password, 10);
+        const newUser = await this.userModel.create({
+          ...data,
+          password: hashedPassword
+        });
+
+        await this.cacheManager.clear();
+        this.logger.log(`User created successfully: ${data.email} with roleId: ${data.roleId}`);
+        
+        const userResponse = newUser.toJSON();
+        delete userResponse.password;
+        delete userResponse.refreshToken;
+        return userResponse;
+
+      } catch (error) {
+        this.handleError(error, 'Create user error');
+        throw error;
       }
+    }
     
-      async getUser(page: number = 1, limit: number = 5) {
-        // 1. Bảo vệ logic: Đảm bảo page và limit luôn lớn hơn 0
+    async getUser(page: number = 1, limit: number = 5) {
         const safePage = Math.max(1, Number(page) || 1);
         const safeLimit = Math.max(1, Number(limit) || 5);
         
@@ -96,11 +89,11 @@ export class userService {
           const offset = (safePage - 1) * safeLimit;
     
           const { count, rows } = await this.userModel.findAndCountAll({
-            // QUAN TRỌNG: Exclude cả refreshToken
+            
             attributes: { exclude: ['password', 'refreshToken'] }, 
             limit: safeLimit, 
             offset,
-            // Đổi sang sắp xếp theo createdAt giảm dần (mới nhất lên đầu)
+           
             order: [['createdAt', 'DESC']],
             include: [{model: Role,attributes: ['id', 'name']
             }]
@@ -120,8 +113,8 @@ export class userService {
           this.handleError(error, 'Get users error');
           throw error;
         }
-      }
-      async getByUserId(id: string) {
+    }
+    async getByUserId(id: string) {
         const key = `user_${id}`;
         try {
           const cached = await this.cacheManager.get(key);
@@ -133,8 +126,8 @@ export class userService {
           this.logger.warn(`CACHE MISS: ${key}`);
           const user = await this.userModel.findOne({
             where: { id }, 
-            attributes: { exclude: ['password', 'refreshToken'] }, // Thêm refreshToken vào exclude
-            include: [{ model: Role, attributes: ['id', 'name'] }] // Thêm Role cho đầy đủ
+            attributes: { exclude: ['password', 'refreshToken'] }, 
+            include: [{ model: Role, attributes: ['id', 'name'] }]
           });
     
           if (!user) {
@@ -142,7 +135,7 @@ export class userService {
             throw new NotFoundException('User not found');
           }
           
-          const plainUser = user.toJSON(); // Chuyển về JSON thuần trước khi cache
+          const plainUser = user.toJSON();
           await this.cacheManager.set(key, plainUser, 60000);
           return plainUser;
     
@@ -150,7 +143,7 @@ export class userService {
           this.handleError(error, 'Get error');
           throw error;
         }
-      }
+    }
     
     async updateUser(id: string, data: UpdateUserDto, currentUser: any) {
 
@@ -196,9 +189,9 @@ export class userService {
             this.handleError(error, 'Update user error');
             throw error;
         }
-      }
+    }
     
-      async deleteUser(id: string) {
+    async deleteUser(id: string) {
         this.logger.log(`Delete user attempt: ${id}`);
         try {
           const user = await this.userModel.findOne({ where: { id } });
@@ -218,9 +211,9 @@ export class userService {
           this.handleError(error, 'Delete user error');
           throw error;
         }
-      }
+    }
     
-      async searchUserByName(name: string) {
+    async searchUserByName(name: string) {
         this.logger.log(`Search user by name: ${name}`);
         try {
             const users = await this.userModel.findAll({
@@ -237,7 +230,58 @@ export class userService {
           this.handleError(error, 'Search user error');
           throw error;
         }
-      }
+    }
     
+    async refreshTokens(refreshTokenString: string) {
+      this.logger.log('Attempting to refresh tokens');
+      try {
+        const decoded = await this.jwtService.verifyAsync(refreshTokenString, {
+          secret: process.env.JWT_REFRESH_SECRET,
+        });
+
+        const userId = decoded.id;
+        const user = await this.userModel.findOne({ 
+          where: { id: userId },
+          include: [{ model: Role, include: [Permission] }] 
+        });
+
+        if (!user || !user.refreshToken) {
+          this.logger.warn(`Refresh failed - user or token not found: ${userId}`);
+          throw new ForbiddenException('Access Denied');
+        }
+        const isMatch = await bcrypt.compare(refreshTokenString, user.refreshToken);
+        
+        if (!isMatch) {
+          this.logger.error(`SECURITY WARNING: Hash mismatch for user ${userId}. Possible token theft!`);
+          await this.userModel.update({ refreshToken: null }, { where: { id: userId } });
+          throw new ForbiddenException('Invalid refresh token. Please login again.');
+        }
+        const role = user.role;
+        const permissions = role?.permissions?.map(p => p.name) || [];
+        const payload = { id: user.id, email: user.email, role: role?.name, permissions };
+        const newAccessToken = await this.jwtService.signAsync(payload, {
+          secret: process.env.JWT_ACCESS_SECRET,
+          expiresIn: process.env.JWT_ACCESS_EXPIRES as any
+        });
+        const newRefreshToken = await this.jwtService.signAsync(payload, {
+          secret: process.env.JWT_REFRESH_SECRET,
+          expiresIn: process.env.JWT_REFRESH_EXPIRES as any
+        });
+
+        const newHash = await bcrypt.hash(newRefreshToken, 10);
+        await this.userModel.update({ refreshToken: newHash }, { where: { id: userId } });
+
+        this.logger.log(`Tokens refreshed successfully for user: ${userId}`);
+
+        return {
+          access_token: newAccessToken,
+          refresh_token: newRefreshToken 
+        };
+
+      } catch (error) {        
+        this.handleError(error, 'Refresh token error');
+        throw error;
+      }
+  }
       
 }    

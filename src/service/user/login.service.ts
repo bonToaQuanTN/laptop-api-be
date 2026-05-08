@@ -56,4 +56,16 @@ export class loginService {
           throw error;
         }
     }
+  
+  async logout(userId: string) {
+    this.logger.log(`Logout attempt for user: ${userId}`);
+    try {
+      await this.userModel.update({ refreshToken: null }, { where: { id: userId } });
+      this.logger.log(`User logged out successfully: ${userId}`);
+      return { message: 'Logout successful' };
+    } catch (error) {
+      this.handleError(error, 'Logout error');
+      throw error;
+    }
+  }
 }
