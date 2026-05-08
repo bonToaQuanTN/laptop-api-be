@@ -26,21 +26,20 @@ async function bootstrap() {
         ),
       }),
 
-      // ghi tất cả log
       new winston.transports.File({filename: 'logs/combined.log',level: 'info'}),
 
-      // ghi riêng lỗi
       new winston.transports.File({filename: 'logs/error.log',level: 'error'}),
     ]
   }); 
 
   const app = await NestFactory.create(AppModule,{ logger });
+  app.use('/payment/webhook', express.raw({ type: 'application/json' }));
+  app.enableCors();
+  // app.setGlobalPrefix('api');
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 
-  app.use('/payment/webhook', express.raw({ type: 'application/json' }));
-  app.enableCors();
-  app.setGlobalPrefix('api');
+  
   
   await app.listen(process.env.PORT ?? 3000);
 }

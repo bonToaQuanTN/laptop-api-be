@@ -48,6 +48,8 @@ import { CartItemController } from './controller/sale/cartItem.controller';
 import { WarehouseController } from './controller/inventory/warehouses.controller';
 import { InventoryController } from './controller/inventory/inventory.controller';
 import { loginService } from './service/user/login.service';
+import { PaymentController } from './controller/payment/pay.controller';
+import { StripeService } from './service/payment/pay.service';
 
 @Module({
   imports: [
@@ -101,7 +103,8 @@ import { loginService } from './service/user/login.service';
       })
     })
   ],
-  controllers: [  
+  controllers: [
+    PaymentController,
     loginController,
     userController,
     RoleController,
@@ -118,6 +121,7 @@ import { loginService } from './service/user/login.service';
     InventoryController
   ],
   providers: [
+    StripeService,
     AppService,
     loginService,
     userService,

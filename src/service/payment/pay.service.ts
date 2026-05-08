@@ -1,9 +1,10 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable, Logger, NotFoundException } from "@nestjs/common";
 import Stripe from "stripe";
 import { InjectModel } from "@nestjs/sequelize";
 import { Order } from "src/model/model.order";
 import { OrderItem } from "src/model/model.orderItem";
 import { Product } from "src/model/model.product";
+import { Discount } from "src/model/model.discount"; // THÊM: Import Discount
 
 @Injectable()
 export class StripeService {
@@ -18,35 +19,43 @@ export class StripeService {
         if (!secretKey) {
             throw new Error('STRIPE_SECRET_KEY is not defined in .env file');
         }
-        this.stripe = new Stripe(secretKey, { 
-            apiVersion: '2026-04-22.dahlia' 
-        });
+        this.stripe = new Stripe(secretKey, {});
     }
     
     async createCheckoutSessionFromOrder(orderId: string) {
         this.logger.log(`Calculating price and creating session for orderId: ${orderId}`);
         try {
-        const order = await this.orderModel.findByPk(orderId, {
-            include: [{ model: OrderItem, include: [Product] }]
-        });
+            const order = await this.orderModel.findByPk(orderId, {
+                include: [
+                    { 
+                        model: OrderItem, 
+                        include: [Product]
+                    },
+                    { model: Discount } 
+                ]
+            });
 
-        if (!order) throw new Error('Order not found');
+            if (!order) {
+                throw new NotFoundException('Order not found'); 
+            }
 
-        let totalAmount = 0;
-        for (const item of order.orderItems) {
-            totalAmount += item.product.price * item.quantity; 
-        }
+            let totalAmount = 0;
+            for (const item of order.orderItems) {
+                const itemTotal = Math.round(Number(item.price) * Number(item.quantity) * 100) / 100;
+                totalAmount += itemTotal; 
+            }
+            if (order.discount?.discountRate) {
+                const discountRate = Number(order.discount.discountRate);
+                totalAmount = totalAmount - (totalAmount * discountRate / 100);
+                totalAmount = Math.round(totalAmount * 100) / 100; 
+            }
 
-        if (order.discount?.discountRate) {
-            totalAmount = totalAmount - (totalAmount * order.discount.discountRate / 100);
-        }
-
-        return await this.createCheckoutSession(orderId, totalAmount);
+            return await this.createCheckoutSession(orderId, totalAmount);
 
         } catch (error) {
-        const errorMessage = error instanceof Error ? error.stack : String(error);
-        this.logger.error(`Failed to process order ${orderId}`, errorMessage);
-        throw error;
+            const errorMessage = error instanceof Error ? error.stack : String(error);
+            this.logger.error(`Failed to process order ${orderId}`, errorMessage);
+            throw error;
         }
     }
 
@@ -74,7 +83,7 @@ export class StripeService {
                 mode: 'payment',
                 success_url: `${successUrl}?session_id={CHECKOUT_SESSION_ID}`,
                 cancel_url: `${cancelUrl}?session_id={CHECKOUT_SESSION_ID}`,
-                metadata: {orderId: orderId },
+                metadata: { orderId: orderId },
             });
 
             this.logger.log(`Checkout session created successfully. SessionId: ${session.id}`);

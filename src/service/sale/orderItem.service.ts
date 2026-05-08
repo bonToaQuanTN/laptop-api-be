@@ -24,32 +24,32 @@ export class OrderItemService {
         this.logger.error(`${context}: Unknown error`, JSON.stringify(error));
         }
     }
-    async createOrderItem(data: CreateOrderItemDto) {
-        const { orderId, productId, quantity } = data;
-        this.logger.log(`Create order item attempt - order: ${orderId}, product: ${productId}`);
+      async createOrderItem(data: CreateOrderItemDto) {
+    const { orderId, productId, quantity } = data;
+    this.logger.log(`Create order item attempt - order: ${orderId}, product: ${productId}`);
 
-        try {
-        const product = await this.productModel.findByPk(productId);
-        
-        if (!product) {
-            this.logger.warn(`Create order item failed - product not found: ${productId}`);
-            throw new NotFoundException('Product not found');
-        }
-        const item = await this.orderItemModel.create({ 
-            orderId, 
-            productId, 
-            quantity 
-        });
-        
-        await this.cacheManager.clear();
-        this.logger.log(`Order item created successfully - order: ${orderId}, product: ${productId}, quantity: ${quantity}`);
-        return item;
+    try {
+      const product = await this.productModel.findByPk(productId);
+      if (!product) {
+        this.logger.warn(`Create order item failed - product not found: ${productId}`);
+        throw new NotFoundException('Product not found');
+      }
+      const item = await this.orderItemModel.create({ 
+        orderId, 
+        productId, 
+        quantity,
+        price: product.price
+      });
+      
+      await this.cacheManager.clear();
+      this.logger.log(`Order item created successfully - Price locked: ${product.price}`);
+      return item;
 
-        } catch (error) {
-        this.handleError(error, 'Create order item error');
-        throw error;
-        }
+    } catch (error) {
+      this.handleError(error, 'Create order item error');
+      throw error;
     }
+  }
 
     async getAllOrderItem(page = 1, limit = 10) {
         const offset = (page - 1) * limit;
