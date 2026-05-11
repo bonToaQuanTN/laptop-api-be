@@ -9,7 +9,7 @@ import { Public } from '../../guard/decorator/public.decorator';
 import { PaginationDto } from '../../dto/pagination/pagination.dto';
 
 @ApiTags('payment')
-@Controller('payment')
+@Controller('stripe')
 export class PaymentController {
   constructor(
     private readonly stripeService: StripeService,
@@ -21,8 +21,8 @@ export class PaymentController {
   @Post('checkout')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create Stripe checkout session' })
-  async checkout(@Body() body: CreatePaymentDto) {
-    const session = await this.stripeService.createCheckoutSessionFromOrder(body.id);
+  async checkout(@Body() data: CreatePaymentDto) {
+    const session = await this.stripeService.createCheckoutSessionFromOrder(data.id);
     return { url: session.url };
   }
 
@@ -35,14 +35,11 @@ export class PaymentController {
     if (!signature) {
       return res.status(HttpStatus.BAD_REQUEST).send('Missing stripe-signature header');
     }
-
     const rawBody = req.rawBody;
     if (!rawBody) {
       return res.status(HttpStatus.BAD_REQUEST).send('Missing request body');
     }
-
     let event: any;
-
     try {
       event = this.stripeService.constructWebhookEvent(rawBody as string | Buffer, signature);
       this.logger.log(`Webhook received: ${event.type}`);
@@ -62,17 +59,20 @@ export class PaymentController {
       }
 
       try {
-        // TÌM KIẾM ĐƠN HÀNG TRƯỚC KHI UPDATE
         const order = await this.orderService.getOrderById(orderId);
         if (order.status === 'PAID') {
           this.logger.warn(`Order ${orderId} is already PAID. Ignoring duplicate webhook.`);
           return res.status(HttpStatus.OK).json({ received: true });
         }
-
-        // Nếu chưa PAID thì tiến hành update
+        
         this.logger.log(`Payment success for orderId: ${orderId}`);
         await this.orderService.updateStatus(orderId, 'PAID'); 
         this.logger.log(`Order status updated to PAID: ${orderId}`);
+
+        for (const item of order.orderItems) {
+            await this.orderService.deductStock(item.productId, item.quantity); 
+            this.logger.log(`Deducted ${item.quantity} from product ${item.productId}`);
+        }
         
       } catch (error) {
          const errorMessage = error instanceof Error ? error.message : String(error);
@@ -92,4 +92,6 @@ export class PaymentController {
   cancel() {
     return { message: "Payment Cancelled" };
   }
+
+  
 }

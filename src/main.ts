@@ -33,7 +33,7 @@ async function bootstrap() {
     ]
   }); 
 
-  const app = await NestFactory.create(AppModule,{ logger });
+  const app = await NestFactory.create(AppModule,{ logger,rawBody: true });
   app.use('/payment/webhook', express.raw({ type: 'application/json' }));
   app.enableCors();
   app.useGlobalPipes(new ValidationPipe({ transform: true }));

@@ -10,6 +10,7 @@ import { CreateUserDto } from 'src/dto/user/user.dto';
 import { UpdateUserDto } from 'src/dto/user/user.dto';
 import { Role } from 'src/model/model.role';
 import { Permission } from 'src/model/model.permission';
+import { Role as RoleEnum } from 'src/common/emuns/role.enum';
 
 @Injectable()
 export class userService {
@@ -41,7 +42,7 @@ export class userService {
 
         if (!data.roleId) {
           this.logger.log(`No roleId provided, assigning default 'guest' role`);
-          const guestRole = await this.roleModel.findOne({ where: { name: 'guest' } });
+          const guestRole = await this.roleModel.findOne({ where: { name: RoleEnum.GUEST } });
           
           if (!guestRole) {
             this.logger.error('Default "guest" role not found in database');

@@ -8,6 +8,7 @@ import { Discount } from 'src/model/model.discount';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { CreateOrderDto, UpdateOrderDto } from 'src/dto/sale/order.dto';
 import { Users } from 'src/model/model.user';
+import { Inventory } from 'src/model/model.inventory';
 
 @Injectable()
 export class OrderService {
@@ -18,15 +19,16 @@ export class OrderService {
         @InjectModel(OrderItem) private orderItemModel: typeof OrderItem,
         @InjectModel(Product) private productModel: typeof Product,
         @InjectModel(Discount) private discountModel: typeof Discount,
+        @InjectModel(Inventory) private inventoryModel: typeof Inventory,
         @Inject(CACHE_MANAGER) private cacheManager: Cache,
     ) {}
-    private handleError(error: unknown, context: string) {
+  private handleError(error: unknown, context: string) {
         if (error instanceof Error) {
             this.logger.error(`${context}: ${error.message}`, error.stack);
         } else {
             this.logger.error(`${context}: Unknown error`, JSON.stringify(error));
         }
-    }  
+  }  
   async createOrder(userId: string, dto: CreateOrderDto) {
     this.logger.log(`Create order attempt for user: ${userId}`);
     try {
@@ -47,7 +49,7 @@ export class OrderService {
   }
 
   
-    async getOrders(page: number = 1) {
+  async getOrders(page: number = 1) {
     this.logger.log(`Get orders page: ${page}`);
     
     try {
@@ -222,4 +224,14 @@ export class OrderService {
     await this.cacheManager.clear();
     return order;
   }
+
+  async deductStock(productId: string, quantity: number) {
+    const inventory = await this.inventoryModel.findOne({ where: { productId } });
+    if (inventory) {
+        inventory.quantity -= quantity;
+        await inventory.save();
+    } else {
+        this.logger.error(`Inventory not found for product: ${productId}`);
+    }
+}
 }

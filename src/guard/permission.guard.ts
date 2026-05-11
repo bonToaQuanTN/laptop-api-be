@@ -1,5 +1,6 @@
 import { CanActivate, ExecutionContext, Injectable, ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from "@nestjs/core";
+import { Role } from 'src/common/emuns/role.enum';
 
 @Injectable()
 export class PermissionGuard implements CanActivate {
@@ -22,13 +23,14 @@ export class PermissionGuard implements CanActivate {
     if (!user) {
       throw new UnauthorizedException('User information not found');
     }
-    if (user.role === 'admin') {
+
+    if (user.role === Role.ADMIN) {
       return true;
     }
 
     const userPermissions = user.permissions || [];
     
-    const hasPermission = requiredPermissions.some((required) => {
+    const hasPermission = requiredPermissions.every((required) => {
       const [action, resource] = required.split('.');
       return (
         userPermissions.includes(required) || userPermissions.includes(`${resource}.*`)

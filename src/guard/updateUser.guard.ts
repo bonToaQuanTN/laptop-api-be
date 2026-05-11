@@ -1,4 +1,5 @@
 import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from '@nestjs/common';
+import { Role } from '../common/emuns/role.enum';
 
 @Injectable()
 export class UpdateUserGuard implements CanActivate {
@@ -12,8 +13,8 @@ export class UpdateUserGuard implements CanActivate {
       throw new ForbiddenException('Authentication required');
     }
 
-    const isAdmin = user.role === 'admin';
-    const isManager = user.role === 'manager';
+    const isAdmin = user.role === Role.ADMIN;
+    const isManager = user.role === Role.MANAGER;
     const isSelf = String(user.id) === String(targetUserId);
     if (isAdmin) {
       return true;

@@ -17,7 +17,7 @@ export class productService {
 
   ) {}
 
-    private handleError(error: unknown, context: string) {
+  private handleError(error: unknown, context: string) {
         if (error instanceof Error) {
         this.logger.error(`${context}: ${error.message}`, error.stack);
         } else {
@@ -26,36 +26,45 @@ export class productService {
     }
 
     
-      async getProducts(page: number = 1) {
-        this.logger.log(`Get products page ${page}`);
-        try {
-          const limit = 10;
-          const offset = (page - 1) * limit;
-          const cacheKey = CacheKeyGenerator.generate('products', 'search', name, page);
-          const cached = await this.cacheManager.get(cacheKey);
-          if (cached) {
-            this.logger.log(`CACHE HIT: ${cacheKey}`);
-            return cached;
-          }
-          this.logger.warn(`CACHE MISS: ${cacheKey}`);
-    
-          const { rows, count } = await this.productModel.findAndCountAll({
-            attributes: ['id', 'name', 'unit', 'price', 'thumbnail', 'origin', 'description', 'categoryId'], 
-            limit,
-            offset,
-            order: [['createdAt', 'DESC']]
-          });
-    
-          const plainRows = rows.map(p => p.toJSON());
-          const result = {total: count,page,totalPages: Math.ceil(count / limit),data: plainRows};
-          await this.cacheManager.set(cacheKey, result, 60);
-          this.logger.log('Products cached');
-          return result;
-        } catch (error) {
-          this.handleError(error, 'Get products error');
-          throw error;
-        }
+    async getProducts(page: number = 1) {
+    this.logger.log(`Get products page ${page}`);
+    try {
+      const limit = 10;
+      const offset = (page - 1) * limit;
+      const cacheKey = CacheKeyGenerator.generate('products', 'page', page, 'limit', limit);
+      
+      const cached = await this.cacheManager.get(cacheKey);
+      if (cached) {
+        this.logger.log(`CACHE HIT: ${cacheKey}`);
+        return cached;
       }
+      
+      this.logger.warn(`CACHE MISS: ${cacheKey}`);
+      
+      const { rows, count } = await this.productModel.findAndCountAll({
+        attributes: ['id', 'name', 'unit', 'price', 'thumbnail', 'origin', 'description', 'categoryId'],
+        limit,
+        offset,
+        order: [['createdAt', 'DESC']]
+      });
+    
+      const plainRows = rows.map(p => p.toJSON());
+      const result = {
+        total: count,
+        page,
+        totalPages: Math.ceil(count / limit),
+        data: plainRows
+      };
+      
+      await this.cacheManager.set(cacheKey, result, 60);
+      this.logger.log('Products cached');
+      return result;
+      
+    } catch (error) {
+      this.handleError(error, 'Get products error');
+      throw error;
+    }
+  }
 
     async searchProducts(name: string, page: number = 1) {
         this.logger.log(`Search products by name: ${name}, page: ${page}`);
