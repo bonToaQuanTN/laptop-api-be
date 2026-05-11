@@ -123,7 +123,6 @@ export class CartService {
         }
 
         await cart.destroy(); // Soft delete
-        
         await this.cacheManager.clear();
         this.logger.log(`Cart soft deleted successfully: ${id}`);
         

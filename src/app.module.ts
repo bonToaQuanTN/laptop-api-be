@@ -50,6 +50,8 @@ import { InventoryController } from './controller/inventory/inventory.controller
 import { loginService } from './service/user/login.service';
 import { PaymentController } from './controller/payment/pay.controller';
 import { StripeService } from './service/payment/pay.service';
+import { UploadController } from './controller/upload/upload.controller';
+import { UploadService } from './service/uploadCloudinary/upload.serice';
 
 @Module({
   imports: [
@@ -104,7 +106,7 @@ import { StripeService } from './service/payment/pay.service';
     })
   ],
   controllers: [
-    
+    UploadController,
     PaymentController,
     loginController,
     userController,
@@ -122,7 +124,7 @@ import { StripeService } from './service/payment/pay.service';
     InventoryController
   ],
   providers: [
-
+    UploadService,
     StripeService,
     AppService,
     loginService,

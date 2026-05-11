@@ -4,13 +4,13 @@ import { IsString, IsNotEmpty } from "class-validator";
 export class CreateWarehouseDto {
   
   @IsString()
-  @IsNotEmpty({ message: 'Tên kho không được để trống' })
+  @IsNotEmpty({ message: 'Warehouse name cannot be left blank' })
   @ApiProperty({ example: 'Kho Tổng TP.HCM' })
   name!: string;
 
   @IsString()
-  @IsNotEmpty({ message: 'Địa chỉ kho không được để trống' })
-  @ApiProperty({ example: 'Số 1, Đường Nguyễn Văn Linh, Bình Chánh, TP.HCM' })
+  @IsNotEmpty({ message: 'Address cannot be left blank' })
+  @ApiProperty({ example: '1 Nguyen Van Linh Street, Binh Chan District, Ho Chi Minh City' })
   address!: string;
 }
 

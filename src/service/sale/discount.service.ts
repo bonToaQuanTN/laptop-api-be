@@ -67,11 +67,10 @@ export class DiscountService {
     async createDiscount(data: DiscountDto) {
         this.logger.log(`Create discount: ${data.name}`);
         try {
-        // SỬA: Chỉ lấy name và discountRate, BỎ id (để DB tự tạo)
         const { name, discountRate } = data; 
         const discount = await this.discountModel.create({ name, discountRate });
         
-        await this.cacheManager.clear(); // Dùng clear cho an toàn
+        await this.cacheManager.clear(); 
         this.logger.log(`Discount created successfully: ${discount.id}`);
         return discount;
         } catch (error) {

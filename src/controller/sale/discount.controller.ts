@@ -8,6 +8,7 @@ import { AuthGuard } from '../../guard/auth.guard';
 import { PermissionGuard } from '../../guard/permission.guard';
 import { Permissions } from '../../guard/decorator/roles.decorator';
 import { ApiTags, ApiOperation, ApiParam, ApiQuery, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
+import { PaginationDto } from 'src/dto/pagination/pagination.dto';
 
 @ApiTags('discounts')
 @UseGuards(AuthGuard, PermissionGuard)
@@ -21,9 +22,9 @@ export class DiscountController {
   @ApiOperation({ summary: 'Get all discounts' })
   @ApiQuery({ name: 'page', required: false, type: Number })
   getDiscounts(
-    @Query('page', new ParseIntPipe({ optional: true })) page: number
+    @Query() pagination: PaginationDto
   ) {
-    return this.discountService.getDiscounts(page || 1);
+    return this.discountService.getDiscounts(pagination.page);
   }
 
   @Post()

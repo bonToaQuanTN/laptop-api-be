@@ -6,6 +6,7 @@ import type { CreatePaymentDto } from '../../dto/payment/pay.dto';
 import { OrderService } from 'src/service/sale/order.service';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { Public } from '../../guard/decorator/public.decorator';
+import { PaginationDto } from '../../dto/pagination/pagination.dto';
 
 @ApiTags('payment')
 @Controller('payment')

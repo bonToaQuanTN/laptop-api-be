@@ -1,21 +1,22 @@
-import {Controller, Get, Post, Put, Body, Delete, Param, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
+import {Controller, Get, Post, Put, Body, Delete, Param, UseGuards,Query, HttpCode, HttpStatus } from '@nestjs/common';
 import { CategoryService } from '../../service/product/category.service';
 import { CategoryDto } from "../../dto/product/category.dto";
 import { Permissions } from '../../guard/decorator/roles.decorator';
 import { PermissionGuard } from '../../guard/permission.guard';
-import { ApiBearerAuth, ApiOperation, ApiParam, ApiBody } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiParam, ApiBody, ApiQuery } from '@nestjs/swagger';
 import { AuthGuard } from '../../guard/auth.guard';
+import { PaginationDto } from '../../dto/pagination/pagination.dto';
 
-@Controller('categories') // Đổi thành chữ thường, số nhiều (chuẩn REST)
+@Controller('categories')
 @UseGuards(AuthGuard, PermissionGuard)
 @ApiBearerAuth()
-export class CategoryController { // Sửa tên class thành PascalCase
+export class CategoryController { 
     constructor(private readonly categoryService: CategoryService) {}
 
     @Post()
     @Permissions('POST.CATEGORY')
     @ApiOperation({ summary: 'Create Category' })
-    @HttpCode(HttpStatus.CREATED) // Tạo mới trả về 201
+    @HttpCode(HttpStatus.CREATED)
     @ApiBody({ type: CategoryDto })
     createCategory(@Body() data: CategoryDto) {
         const { name } = data;
@@ -25,8 +26,8 @@ export class CategoryController { // Sửa tên class thành PascalCase
     @Get()
     @Permissions('GET.CATEGORY')
     @ApiOperation({ summary: 'Get All Categories' })
-    getCategories() {
-        return this.categoryService.getCategories();
+    getCategories(@Query() pagination: PaginationDto) {
+        return this.categoryService.getCategories(pagination);
     }
 
     @Get('category/:name')

@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder} from '@nestjs/swagger';
 import { WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
@@ -35,7 +36,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule,{ logger });
   app.use('/payment/webhook', express.raw({ type: 'application/json' }));
   app.enableCors();
-  // app.setGlobalPrefix('api');
+  app.useGlobalPipes(new ValidationPipe({ transform: true }));
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 

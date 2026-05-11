@@ -4,18 +4,18 @@ import { IsString, IsNotEmpty, IsInt, Min } from "class-validator";
 export class CreateInventoryDto {
   
   @IsString()
-  @IsNotEmpty({ message: 'Product ID không được để trống' })
-  @ApiProperty({ example: 'uuid-product-id', description: 'ID Sản phẩm' })
+  @IsNotEmpty({ message: 'Product ID cannot be left blank' })
+  @ApiProperty({ example: 'uuid-product-id', description: 'Product ID' })
   productId!: string;
 
   @IsString()
-  @IsNotEmpty({ message: 'Warehouse ID không được để trống' })
-  @ApiProperty({ example: 'uuid-warehouse-id', description: 'ID Kho hàng' })
+  @IsNotEmpty({ message: 'Warehouse ID cannot be left blank' })
+  @ApiProperty({ example: 'uuid-warehouse-id', description: 'Warehouse ID' })
   warehouseId!: string;
 
-  @IsInt({ message: 'Số lượng phải là số nguyên' })
-  @Min(0, { message: 'Số lượng không được âm' })
-  @ApiProperty({ example: 100, description: 'Số lượng tồn kho' })
+  @IsInt({ message: 'Quantity must be an integer' })
+  @Min(0, { message: 'Quantity cannot be negative' })
+  @ApiProperty({ example: 100, description: 'Stock quantity' })
   quantity!: number;
 }
 

@@ -145,51 +145,39 @@ export class userService {
         }
     }
     
-    async updateUser(id: string, data: UpdateUserDto, currentUser: any) {
+  async updateUser(id: string, data: UpdateUserDto) {
+    this.logger.log(`Update user attempt: ${id}`);
+    try {
+      const user = await this.userModel.findOne({ where: { id } });
+      if (!user) {
+        this.logger.warn(`Update failed - user not found: ${id}`);
+        throw new NotFoundException('User not found');
+      }
 
-        this.logger.log(`Update user attempt: ${id} by ${currentUser.id}`);
-        try {
-            const user = await this.userModel.findOne({ where: { id } });
-            if (!user) {
-                this.logger.warn(`Update failed - user not found: ${id}`);
-                throw new NotFoundException('User not found');
-            }
-        
-            if (currentUser.role !== 'admin' && currentUser.role !== 'manager' && currentUser.id !== String(id)) {
-                this.logger.warn(`Unauthorized update attempt by ${currentUser.id} on user ${id}`);
-                throw new ForbiddenException('You can only update your own profile');
-            }
-        
-            const updateData: any = {};
-            if (data.firstName !== undefined) updateData.firstName = data.firstName;
-            if (data.lastName !== undefined) updateData.lastName = data.lastName;
-            if (data.email !== undefined) updateData.email = data.email;
-            if (data.designation !== undefined) updateData.designation = data.designation;
-            if (data.phone !== undefined) updateData.phone = data.phone;
-        
-            if (data.roleId) {
-                if (currentUser.role !== 'admin') {
-                this.logger.warn(`Forbidden role update attempt by ${currentUser.id}`);
-                throw new ForbiddenException('Only admin can update role');
-                }
-                updateData.roleId = data.roleId;
-            }
-          
-            if (data.password) {
-                updateData.password = await bcrypt.hash(data.password, 10);
-            }
-    
-            await user.update(updateData);
-            await this.cacheManager.clear();
-            this.logger.log(`CACHE INVALIDATED: user_${id}`);
-            this.logger.log(`User updated successfully: ${id}`);
-            return { message: 'User updated successfully' };
-    
-        } catch (error) {
-            this.handleError(error, 'Update user error');
-            throw error;
-        }
+      const updateData: any = {};
+      if (data.firstName !== undefined) updateData.firstName = data.firstName;
+      if (data.lastName !== undefined) updateData.lastName = data.lastName;
+      if (data.email !== undefined) updateData.email = data.email;
+      if (data.designation !== undefined) updateData.designation = data.designation;
+      if (data.phone !== undefined) updateData.phone = data.phone;
+      if (data.roleId !== undefined) updateData.roleId = data.roleId;
+      
+      if (data.password) {
+        updateData.password = await bcrypt.hash(data.password, 10);
+      }
+
+      await user.update(updateData);
+      await this.cacheManager.clear();
+      this.logger.log(`CACHE INVALIDATED`);
+      this.logger.log(`User updated successfully: ${id}`);
+      
+      return { message: 'User updated successfully' };
+
+    } catch (error) {
+      this.handleError(error, 'Update user error');
+      throw error;
     }
+  }
     
     async deleteUser(id: string) {
         this.logger.log(`Delete user attempt: ${id}`);

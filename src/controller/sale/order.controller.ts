@@ -7,6 +7,7 @@ import { CreateOrderDto, UpdateOrderDto } from "../../dto/sale/order.dto";
 import { AuthGuard } from '../../guard/auth.guard';
 import { PermissionGuard } from '../../guard/permission.guard';
 import { Permissions } from '../../guard/decorator/roles.decorator';
+import { PaginationDto } from 'src/dto/pagination/pagination.dto';
 
 @ApiTags('orders')
 @UseGuards(AuthGuard, PermissionGuard)
@@ -29,8 +30,8 @@ export class OrderController {
     @Permissions('GET.ORDER')
     @ApiOperation({ summary: 'Get all orders' })
     @ApiQuery({ name: 'page', required: false, type: Number })
-    getOrders(@Query('page', new ParseIntPipe({ optional: true })) page: number) {
-        return this.orderService.getOrders(page || 1);
+    getOrders(@Query() pagination: PaginationDto) {
+        return this.orderService.getOrders(pagination.page);
     }
 
     @Get(':id')

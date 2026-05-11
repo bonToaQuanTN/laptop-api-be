@@ -112,6 +112,7 @@ export class CartItemService {
         throw error;
         }
     }
+    
     async getCartItemsByCartId(cartId: string) {
         const cacheKey = `cart_items_${cartId}`;
         this.logger.log(`Fetching cart items for cart: ${cartId}`);

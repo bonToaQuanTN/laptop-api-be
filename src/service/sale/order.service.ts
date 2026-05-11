@@ -47,10 +47,20 @@ export class OrderService {
   }
 
   
-  async getOrders(page: number = 1) {
+    async getOrders(page: number = 1) {
     this.logger.log(`Get orders page: ${page}`);
+    
     try {
       const limit = 5;
+      const cacheKey = `orders_page_${page}_limit_${limit}`;
+      const cached = await this.cacheManager.get(cacheKey);
+      if (cached) {
+        this.logger.log(`CACHE HIT: ${cacheKey}`);
+        return cached;
+      }
+
+      this.logger.warn(`CACHE MISS: ${cacheKey}`);
+      
       const offset = (page - 1) * limit;
       
       const { rows, count } = await this.orderModel.findAndCountAll({
@@ -69,10 +79,12 @@ export class OrderService {
         offset,
         order: [['createdAt', 'DESC']]
       });
-
       const orders = rows.map(order => {
         const plainOrder = order.toJSON();
-        const subtotal = plainOrder.orderItems.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+        const subtotal = plainOrder.orderItems.reduce((sum, item) => {
+          return sum + (Number(item.quantity) * Number(item.price));
+        }, 0);
+        
         const discountRate = Number(plainOrder.discount?.discountRate || 0);
         const finalAmount = subtotal - (subtotal * discountRate) / 100;
         
@@ -84,20 +96,24 @@ export class OrderService {
         };
       });
 
-      this.logger.log(`Orders fetched successfully: ${orders.length}`);
-      return {
+      const result = {
         page,
         limit,
         totalOrders: count,
         totalPages: Math.ceil(count / limit),
         data: orders
       };
+      await this.cacheManager.set(cacheKey, result, 60000);
+      this.logger.log(`CACHE SET: ${cacheKey}`);
+
+      this.logger.log(`Orders fetched successfully: ${orders.length}`);
+      return result;
+
     } catch (error) {
       this.handleError(error, 'Get orders error');
       throw error;
     }
   }
-
   async updateOrder(id: string, dto: UpdateOrderDto) {
     this.logger.log(`Update order attempt: ${id}`);
     try {

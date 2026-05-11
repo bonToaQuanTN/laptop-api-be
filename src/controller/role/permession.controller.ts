@@ -3,7 +3,7 @@ import { PermissionService } from '../../service/role/permission.service';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiParam, ApiBody } from '@nestjs/swagger';
 import { PermissionDto } from "../../dto/role/permission.dto";
 import { AuthGuard } from '../../guard/auth.guard';
-import { RolesGuard} from '../../guard/roles.guard'; 
+import { RolesGuard} from '../../guard/roles.guard';
 
 @ApiTags('permissions') 
 @UseGuards(AuthGuard, RolesGuard) 

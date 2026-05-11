@@ -5,6 +5,7 @@ import { Op } from 'sequelize';
 import { CreateProductDto, UpdateProductDto } from 'src/dto/product/product.dto';
 import { Product } from 'src/model/model.product';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { CacheKeyGenerator } from 'src/common/utils/cacheKey.util';
 
 @Injectable()
 export class productService {
@@ -30,7 +31,7 @@ export class productService {
         try {
           const limit = 10;
           const offset = (page - 1) * limit;
-          const cacheKey = `products_page_${page}`;
+          const cacheKey = CacheKeyGenerator.generate('products', 'search', name, page);
           const cached = await this.cacheManager.get(cacheKey);
           if (cached) {
             this.logger.log(`CACHE HIT: ${cacheKey}`);

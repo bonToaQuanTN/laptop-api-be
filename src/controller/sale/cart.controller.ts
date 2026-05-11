@@ -7,6 +7,7 @@ import { AuthGuard } from '../../guard/auth.guard';
 import { PermissionGuard } from '../../guard/permission.guard';
 import { Permissions } from '../../guard/decorator/roles.decorator';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiParam,ApiQuery } from '@nestjs/swagger';
+import { PaginationDto } from 'src/dto/pagination/pagination.dto';
 
 @ApiTags('carts')
 @UseGuards(AuthGuard, PermissionGuard)
@@ -20,9 +21,9 @@ export class CartController {
   @ApiOperation({ summary: 'Get all carts (Admin view)' })
   @ApiQuery({ name: 'page', required: false, type: Number })
   getAllCarts(
-    @Query('page', new ParseIntPipe({ optional: true })) page: number
+    @Query() pagination: PaginationDto
   ) {
-    return this.cartService.getAllCarts(page || 1);
+    return this.cartService.getAllCarts(pagination.page);
   }
 
   @Get(':id')

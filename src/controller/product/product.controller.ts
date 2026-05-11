@@ -5,6 +5,7 @@ import { productService } from '../../service/product/product.service';
 import { AuthGuard } from '../../guard/auth.guard';
 import { PermissionGuard } from '../../guard/permission.guard';
 import { Permissions } from '../../guard/decorator/roles.decorator';
+import { PaginationDto } from 'src/dto/pagination/pagination.dto';
 
 @ApiTags('Products')
 @ApiBearerAuth()
@@ -25,10 +26,8 @@ export class ProductController {
     @Permissions('GET.PRODUCT') 
     @ApiOperation({ summary: 'Get all products' })
     @ApiQuery({ name: 'page', required: false, type: Number })
-    getProducts(
-        @Query('page', new ParseIntPipe({ optional: true })) page: number
-    ) {
-        return this.productService.getProducts(page);
+    getProducts(@Query() pagination: PaginationDto) {
+        return this.productService.getProducts(pagination.page);
     }
 
     @Get('search')
@@ -38,9 +37,9 @@ export class ProductController {
     @ApiQuery({ name: 'page', required: false, type: Number })
     searchProducts(
         @Query('name') name: string,
-        @Query('page', new ParseIntPipe({ optional: true })) page: number
+        @Query() pagination: PaginationDto
     ) {
-        return this.productService.searchProducts(name, page);
+        return this.productService.searchProducts(name, pagination.page);
     }
 
     @Put(':id')

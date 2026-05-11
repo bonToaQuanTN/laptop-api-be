@@ -5,6 +5,7 @@ import { AuthGuard } from '../../guard/auth.guard';
 import { PermissionGuard } from '../../guard/permission.guard';
 import { Permissions } from '../../guard/decorator/roles.decorator';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiBody } from '@nestjs/swagger';
+import { PaginationDto } from '../../dto/pagination/pagination.dto';
 
 @ApiTags('inventories')
 @UseGuards(AuthGuard, PermissionGuard)
@@ -17,10 +18,8 @@ export class InventoryController {
   @Permissions('GET.INVENTORY')
   @ApiOperation({ summary: 'Get all inventory records' })
   @ApiQuery({ name: 'page', required: false, type: Number })
-  getInventories(
-    @Query('page', new ParseIntPipe({ optional: true })) page: number
-  ) {
-    return this.inventoryService.getInventories(page || 1);
+  getInventories(@Query() pagination: PaginationDto) {
+    return this.inventoryService.getInventories(pagination.page);
   }
 
   @Post()

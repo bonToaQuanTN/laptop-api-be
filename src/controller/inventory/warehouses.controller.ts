@@ -8,6 +8,7 @@ import { AuthGuard } from '../../guard/auth.guard';
 import { PermissionGuard } from '../../guard/permission.guard';
 import { Permissions } from '../../guard/decorator/roles.decorator';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiBody } from '@nestjs/swagger';
+import { PaginationDto } from '../../dto/pagination/pagination.dto';
 
 @ApiTags('warehouses')
 @UseGuards(AuthGuard, PermissionGuard)
@@ -20,10 +21,8 @@ export class WarehouseController {
   @Permissions('GET.WAREHOUSE')
   @ApiOperation({ summary: 'Get all warehouses with pagination' })
   @ApiQuery({ name: 'page', required: false, type: Number })
-  getWarehouses(
-    @Query('page', new ParseIntPipe({ optional: true })) page: number
-  ) {
-    return this.warehouseService.getWarehouses(page || 1);
+  getWarehouses(@Query() pagination: PaginationDto) {
+    return this.warehouseService.getWarehouses(pagination.page);
   }
 
   @Get(':id')

@@ -9,6 +9,8 @@ import { Permissions } from '../../guard/decorator/roles.decorator';
 import { Public } from '../../guard/decorator/public.decorator';
 import { CacheInterceptor } from '@nestjs/cache-manager';
 import { RefreshTokenDto } from '../../dto/user/token.dto';
+import { PaginationDto } from 'src/dto/pagination/pagination.dto';
+import { UpdateUserGuard } from 'src/guard/updateUser.guard';
 
 @ApiTags('User')
 @UseGuards(AuthGuard, PermissionGuard)
@@ -31,9 +33,8 @@ export class userController {
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @Permissions('GET.USER')
-  getAll(@Query('page', new ParseIntPipe({ optional: true })) page: number) {
-    // optional: true giúp không bị lỗi 400 nếu client không truyền page
-    return this.userService.getUser(page);
+  getAll(@Query() pagination: PaginationDto) {
+    return this.userService.getUser(pagination.page);
   }
 
   @Get('search')
@@ -51,12 +52,14 @@ export class userController {
     return this.userService.getByUserId(id);
   }
 
-  @Put(':id')
+   @Put(':id')
   @Permissions('PUT.USER')
+  @UseGuards(AuthGuard, UpdateUserGuard) 
   @ApiOperation({ summary: 'Update user' })
   @ApiBody({ type: UpdateUserDto })
-  updateUser( @Param('id') id: string, @Body() data: UpdateUserDto, @Req() req: any) {
-    return this.userService.updateUser(id, data, req.user);
+  updateUser( @Param('id') id: string,@Body() data: UpdateUserDto
+  ) {
+    return this.userService.updateUser(id, data); 
   }
 
   @Delete(':id')
