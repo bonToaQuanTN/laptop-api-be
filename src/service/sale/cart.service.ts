@@ -3,7 +3,6 @@ import { InjectModel } from '@nestjs/sequelize';
 import type { Cache } from 'cache-manager';
 import { Cart } from 'src/model/model.cart';
 import { Users } from 'src/model/model.user';
-import { Product } from 'src/model/model.product';
 import { CartItem } from 'src/model/model.cartItem';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 
@@ -45,6 +44,7 @@ export class CartService {
         const { rows, count } = await this.cartModel.findAndCountAll({
             limit,
             offset,
+            distinct: true,
             order: [['createdAt', 'DESC']],
             include: [{
             model: Users,
@@ -132,6 +132,4 @@ export class CartService {
         throw error;
         }
     }
-
-    
 }

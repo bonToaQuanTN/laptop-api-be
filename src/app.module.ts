@@ -52,7 +52,6 @@ import { PaymentController } from './controller/payment/pay.controller';
 import { StripeService } from './service/payment/pay.service';
 import { UploadController } from './controller/upload/upload.controller';
 import { UploadService } from './service/uploadCloudinary/upload.serice';
-
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -103,7 +102,7 @@ import { UploadService } from './service/uploadCloudinary/upload.serice';
         secret: configService.get('JWT_SECRET') || 'your-secret-key',
         signOptions: { expiresIn: configService.get('JWT_EXPIRES_IN') || '1d' }
       })
-    })
+    }),
   ],
   controllers: [
     UploadController,
@@ -145,5 +144,6 @@ import { UploadService } from './service/uploadCloudinary/upload.serice';
     roleService,
     OrderItemService
   ],
+  exports: [OrderService]
 })
 export class AppModule {}

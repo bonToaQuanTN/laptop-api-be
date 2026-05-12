@@ -8,6 +8,7 @@ import { AuthGuard } from '../../guard/auth.guard';
 import { PermissionGuard } from '../../guard/permission.guard';
 import { Permissions } from '../../guard/decorator/roles.decorator';
 import { PaginationDto } from 'src/dto/pagination/pagination.dto';
+import { CheckoutDto } from 'src/dto/checkout/checkOut.dto';
 
 @ApiTags('orders')
 @UseGuards(AuthGuard, PermissionGuard)
@@ -61,5 +62,16 @@ export class OrderController {
     @ApiParam({ name: 'id', type: String, description: 'Order ID (UUID)' })
     deleteOrder(@Param('id') id: string) {
         return this.orderService.deleteOrder(id);
+    }
+
+    @Post('checkout')
+    @Permissions('POST.ORDER.CHECKOUT') // Tạo permission mới cho checkout
+    @HttpCode(HttpStatus.CREATED)
+    @ApiOperation({ summary: 'Process checkout: Cart -> Deduct Stock -> Create Order' })
+    @ApiBody({ type: CheckoutDto })
+    checkout( @Req() req: any, @Body() dto: CheckoutDto
+    ) {
+        const userId = req.user.id;
+        return this.orderService.checkout(userId, dto);
     }
 }
