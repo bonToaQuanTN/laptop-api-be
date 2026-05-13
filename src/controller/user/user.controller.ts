@@ -16,12 +16,11 @@ import { UpdateUserGuard } from 'src/guard/updateUser.guard';
 @UseGuards(AuthGuard, PermissionGuard)
 @ApiBearerAuth()
 @Controller('User')
-@ApiTags('User')
 export class userController {
   constructor(private readonly userService: userService) {}
 
   @Post()
-  @Permissions('POST.USER')
+  @Public()
   @HttpCode(HttpStatus.CREATED) 
   create(@Body() data: CreateUserDto) {
     return this.userService.createUser(data);
@@ -52,7 +51,7 @@ export class userController {
     return this.userService.getByUserId(id);
   }
 
-   @Put(':id')
+  @Put(':id')
   @Permissions('PUT.USER')
   @UseGuards(AuthGuard, UpdateUserGuard) 
   @ApiOperation({ summary: 'Update user' })

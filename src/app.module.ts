@@ -144,6 +144,6 @@ import { UploadService } from './service/uploadCloudinary/upload.serice';
     roleService,
     OrderItemService
   ],
-  exports: [OrderService]
+  // exports: [OrderService]
 })
 export class AppModule {}

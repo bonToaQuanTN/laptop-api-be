@@ -30,7 +30,7 @@ export class OrderService {
         @InjectModel(Users) private userModel: typeof Users,
         @InjectModel(Cart) private cartModel: typeof Cart,
         @InjectModel(CartItem) private cartItemModel: typeof CartItem,
-        @Inject(forwardRef(() => StripeService))private paymentService: StripeService
+        // @Inject(forwardRef(() => StripeService))private paymentService: StripeService
       ) {}
   private handleError(error: unknown, context: string) {
         if (error instanceof Error) {
@@ -247,8 +247,6 @@ export class OrderService {
 
     async checkout(userId: string, dto: CheckoutDto) {
     this.logger.log(`[CHECKOUT START] User: ${userId}`);
-    
-    // Cải tiến tốt của bạn: Check connection
     const sequelize = this.userModel.sequelize;
     if (!sequelize) {
       throw new BadRequestException('Database connection unavailable');
@@ -257,7 +255,6 @@ export class OrderService {
     const transaction = await sequelize.transaction();
 
     try {
-      // 1. Lấy giỏ hàng (Truyền transaction để tránh dirty read - Cải tiến tốt)
       const cart = await this.cartModel.findOne({
         where: { userId },
         include: [{ 
@@ -267,7 +264,6 @@ export class OrderService {
         transaction
       });
 
-      // CHỈ CẦN THROW, KHÔNG CẦN GỌI ROLLBACK THỦ CÔNG
       if (!cart || !cart.cartItems || cart.cartItems.length === 0) {
         throw new BadRequestException('Your cart is empty');
       }
@@ -302,9 +298,6 @@ export class OrderService {
         }
         discountRate = Number(discount.discountRate);
       }
-
-      // TÍNH TIỀN DỰA TRÊN GIÁ ĐÃ CHỐT TRONG GIỎ HÀNG
-      // CHỈNH SỬA: Dùng item.cartItem.price thay vì item.cartItem.product.price
       const finalAmount = productCheckList.reduce((total, item) => {
         return total + (Number(item.cartItem.quantity) * Number(item.cartItem.price));
       }, 0);
@@ -324,8 +317,6 @@ export class OrderService {
         shippingAddress: dto.shippingAddress || null,
         price: finalAmountAfterDiscount 
       }, { transaction });
-
-      // CHỈNH SỬA: Lấy giá từ CartItem
       const orderItemsData = productCheckList.map(item => ({
         orderId: newOrder.id,
         productId: item.cartItem.productId,

@@ -2,6 +2,7 @@ import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { IsEmail, IsString, IsNotEmpty, MinLength, IsOptional, IsNumberString} from "class-validator";
 import { Transform } from "class-transformer";
 
+
 export class CreateUserDto {
     @IsString()
     @IsNotEmpty({ message: 'Last name cannot be empty' })

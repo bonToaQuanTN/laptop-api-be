@@ -1,5 +1,5 @@
 import { Injectable, Inject, Logger, NotFoundException, ConflictException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/sequelize';
+import { InjectModel} from '@nestjs/sequelize';
 import type { Cache } from 'cache-manager';
 import { Op } from 'sequelize';
 import {CategoryDto} from 'src/dto/product/category.dto';
@@ -7,6 +7,8 @@ import {Category } from 'src/model/model.category';
 import {CACHE_MANAGER} from '@nestjs/cache-manager';
 import { Product } from 'src/model/model.product';
 import { PaginationDto } from 'src/dto/pagination/pagination.dto';
+import { Sequelize } from "sequelize";
+
 
 @Injectable()
 export class CategoryService {
@@ -45,7 +47,7 @@ export class CategoryService {
         }
     }
 
-      async getCategories(pagination: PaginationDto) {
+    async getCategories(pagination: PaginationDto) {
     const page = pagination.page || 1;
     const limit = pagination.limit || 10;
     const offset = (page - 1) * limit;
@@ -55,28 +57,35 @@ export class CategoryService {
     try {
       const cached = await this.cacheManager.get(cacheKey);
       if (cached) {
-        this.logger.log(`CACHE HIT: ${cacheKey}`);
-        return cached;
+          this.logger.log(`CACHE HIT: ${cacheKey}`);
+          return cached;
       }
 
       this.logger.warn(`CACHE MISS: ${cacheKey}`);
+      
       const { rows, count } = await this.categoryModel.findAndCountAll({
         limit,
         offset,
-        order: [['createdAt', 'DESC']] 
+        attributes: [
+          'id', 
+          'name',
+          [Sequelize.literal(`(SELECT COUNT(*) FROM "Products" WHERE "Products"."categoryId" = "Category"."id")`), 'productCount']
+        ],
+        order: [['createdAt', 'DESC']]
       });
       
       const plainCategories = rows.map(c => c.toJSON());
-      const result = {
-        data: plainCategories,
-        total: count,
-        page,
-        limit,
+      const result = { 
+        data: plainCategories, 
+        total: count, 
+        page, 
+        limit, 
         totalPages: Math.ceil(count / limit)
       };
 
       await this.cacheManager.set(cacheKey, result, 60);
       this.logger.log(`Categories cached`);
+      
       return result;
       
     } catch (error) {

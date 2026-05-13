@@ -1,8 +1,7 @@
 import { 
-  Controller, Get, Body, Post, Delete, Param, UseGuards, Req, HttpCode, HttpStatus,ParseIntPipe, Query
+  Controller, Get, Post, Delete, Param, UseGuards, Req, HttpCode, HttpStatus,ParseIntPipe, Query
 } from '@nestjs/common';
 import { CartService } from '../../service/sale/cart.service';
-import { CreateCartDto } from '../../dto/sale/cart.dto';
 import { AuthGuard } from '../../guard/auth.guard';
 import { PermissionGuard } from '../../guard/permission.guard';
 import { Permissions } from '../../guard/decorator/roles.decorator';
@@ -38,7 +37,7 @@ export class CartController {
   @Permissions('POST.CART')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create a new cart for current user' })
-  createCart(@Body() dto: CreateCartDto, @Req() req: any) {
+  createCart(@Req() req: any) {
     const userId = req.user.id; 
     return this.cartService.createCart(userId);
   }

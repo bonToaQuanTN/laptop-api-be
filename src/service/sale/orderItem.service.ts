@@ -87,7 +87,7 @@ export class OrderItemService {
         }
     }
 
-    async updateOrderItem(id: string, data: CreateOrderItemDto) {
+    async updateOrderItem(id: string, data: UpdateOrderItemDto) {
         const { productId, quantity } = data;
         this.logger.log(`Update order item attempt: ${id}`);
 

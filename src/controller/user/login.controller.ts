@@ -6,7 +6,6 @@ import { LoginDto } from '../../dto/user/login.dto';
 @ApiTags('User')
 @ApiBearerAuth()
 @Controller('User')
-@ApiTags('User')
 export class loginController {
     constructor(private readonly loginService: loginService) {}
     @Post('login')

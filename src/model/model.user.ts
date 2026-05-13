@@ -2,6 +2,7 @@ import {Table, Column, Model, DataType, AllowNull, PrimaryKey, ForeignKey, Belon
 import { Role } from "./model.role";
 import { Order } from "./model.order";
 
+
 @Table({ 
     tableName: "Users",
     version: true,
